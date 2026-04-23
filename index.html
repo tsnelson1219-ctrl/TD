@@ -7,225 +7,218 @@
     <title>十神五極</title>
     <style>
         :root {
-            --bg: #e9e4d1; --gold: #5d5d4d; --green: #2e5a4b; --red: #a64d4d;
+            --bg: #e9e4d1; --gold: #5d5d4d; --text-main: #5d5d4d; 
+            --green: #2e5a4b; --red: #a64d4d;
             --wood: #2d5d4d; --fire: #a64d4d; --earth: #8c6d31; --metal: #5a5a5a; --water: #2d4a5d;
             --same-bg: rgba(46, 90, 75, 0.15); --oppo-bg: rgba(166, 77, 77, 0.15); 
         }
-        body.dark-theme { --bg: #0f0e0c; --gold: #d4a75b; --green: #4fac8d; --red: #ff3e3e; --same-bg: rgba(79, 172, 141, 0.2); --oppo-bg: rgba(255, 62, 62, 0.2); }
-        body { background: var(--bg); color: var(--gold); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; overflow: hidden; transition: all 0.4s; }
-        .disc-wrapper { position: relative; width: min(95vmin, 700px); height: min(95vmin, 700px); display: flex; justify-content: center; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        body.dark-theme { 
+            --bg: #0f0e0c; --gold: #d4a75b; --text-main: #4a907a; 
+            --green: #4fac8d; --red: #ff3e3e; 
+            --same-bg: rgba(79, 172, 141, 0.2); --oppo-bg: rgba(255, 62, 62, 0.2); 
+        }
+        body { background: var(--bg); color: var(--text-main); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: "PingFang TC", sans-serif; overflow: hidden; transition: background 0.5s; }
+        
+        .disc-wrapper { position: relative; width: min(95vmin, 700px); height: min(95vmin, 700px); cursor: pointer; }
         svg { width: 100%; height: 100%; overflow: visible; }
-        .sector-path { fill: none; stroke: var(--gold); stroke-width: 1.2; transition: all 0.5s ease; }
-        .inner-grid { fill: none; stroke: var(--gold); stroke-width: 0.8; opacity: 0.5; }
-        .wuxing-label { font-size: 22px; font-weight: 900; letter-spacing: 2px; }
-        .inner-label { font-size: 13.5px; fill: var(--gold); }
-        .outer-stem { font-size: 15.5px; fill: var(--gold); font-weight: bold; }
+
+        .node-group { transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sector-part, .card-part { transition: opacity 0.5s ease, transform 0.8s ease; transform-origin: 350px 350px; }
+        .dm-main, .bazi-group, .connect-line, .relation-label { transition: all 0.7s ease; }
+
+        .sector-path { fill: none; stroke: var(--gold); stroke-width: 1.2; }
+        .inner-grid { fill: none; stroke: var(--gold); stroke-width: 1.2; opacity: 0.5; }
+        
         .card-bg { fill: rgba(93, 93, 77, 0.05); stroke: var(--gold); stroke-width: 1.5; rx: 8px; }
-        .card-line { fill: none; stroke: var(--gold); stroke-width: 0.8; opacity: 0.6; }
-        .card-title { font-size: 16px; font-weight: 900; }
-        .card-text { font-size: 14px; fill: var(--gold); }
-        .card-stem { font-size: 16px; font-weight: bold; fill: var(--gold); }
-        .connect-line { fill: none; stroke: var(--gold); stroke-width: 1.5; opacity: 0.3; stroke-dasharray: 4 4; }
-        .relation-label { font-size: 18px; fill: var(--gold); opacity: 0.9; font-weight: 900; letter-spacing: 2px;}
-        .dm-main { font-size: 60px; font-weight: 900; text-anchor: middle; transition: all 0.4s ease; }
-        .bazi-sub { font-size: 14px; fill: var(--gold); text-anchor: middle; opacity: 0.9; transition: all 0.4s ease; }
-        .footer { margin-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 20px; width: 100%; }
-        .date-pill { padding: 8px 20px; border: 1.5px solid var(--gold); border-radius: 30px; background: rgba(93, 93, 77, 0.05); font-size: 13.5px; cursor: pointer; display: inline-block; width: fit-content; max-width: 90%; text-align: center; white-space: nowrap; font-weight: bold; }
-        .date-pill.ref-mode { border-width: 3.5px; cursor: default; background: transparent; color: var(--red); }
+        .card-line { fill: none; stroke: var(--gold); stroke-width: 0.8; opacity: 0.5; }
+        
+        .connect-line { 
+            fill: none; stroke: var(--text-main); stroke-width: 2.2; 
+            opacity: 0.8; stroke-dasharray: 8 4; 
+            filter: drop-shadow(0 0 6px var(--text-main));
+        }
+
+        .c-t, .c-s, .inner-label, .outer-stem, .relation-label, .bazi-sub { fill: var(--text-main); }
+        
+        /* 最終校準：根據實測調整為 -40px */
+        .footer { 
+            margin-top: -40px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 20px; 
+            padding-bottom: 30px; 
+            width: 100%; 
+            position: relative;
+            z-index: 10;
+        }
+        
+        .date-pill { padding: 8px 22px; border: 1.5px solid var(--gold); border-radius: 30px; font-size: 13px; font-weight: bold; background: rgba(93, 93, 77, 0.05); cursor: pointer; color: var(--text-main); }
         .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid var(--gold); cursor: pointer; opacity: 0.5; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); z-index: 100; justify-content: center; align-items: center; }
-        .modal-box { background: var(--bg); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); text-align: center; width: 300px; }
-        input[type="datetime-local"] { width: 100%; padding: 10px; border: 1.2px solid var(--gold); border-radius: 8px; background: transparent; color: inherit; font-size: 15px; margin-bottom: 20px; }
-        .btn-ok { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="disc-wrapper" onclick="toggleMode()">
     <svg id="main-svg" viewBox="0 0 700 700">
-        <g id="bg-layer"></g>
-        <g id="gods-layer"></g>
-        <text x="350" y="350" class="dm-main" id="dmDisplay" dominant-baseline="middle">--</text>
-        <g id="bazi-group">
-            <text class="bazi-sub" id="baziLine1" dominant-baseline="middle">讀取中...</text>
-            <text class="bazi-sub" id="baziLine2" dominant-baseline="middle"></text>
+        <g id="grid-extras"></g>
+        <g id="node-0" class="node-group"></g>
+        <g id="node-1" class="node-group"></g>
+        <g id="node-2" class="node-group"></g>
+        <g id="node-3" class="node-group"></g>
+        <g id="node-4" class="node-group"></g>
+        <text x="350" y="335" class="dm-main" id="dmDisplay" text-anchor="middle" dominant-baseline="middle" font-weight="900" font-size="60">--</text>
+        <g id="bazi-group" class="bazi-group">
+            <text class="bazi-sub" id="baziL1" text-anchor="middle" dominant-baseline="middle" font-size="14"></text>
+            <text class="bazi-sub" id="baziL2" text-anchor="middle" dominant-baseline="middle" font-size="14"></text>
         </g>
     </svg>
 </div>
 
 <div class="footer">
-    <div class="date-pill" id="dp" onclick="toggleModal(true); event.stopPropagation();">設定...</div>
-    <div class="date-pill ref-mode" id="dp-reference">基準干支...</div>
+    <div class="date-pill" id="dp" onclick="toggleModal(true); event.stopPropagation();">設定時間...</div>
+    <div class="date-pill" id="dp-ref" style="border-width:3.5px; color:var(--red); cursor:default;">今日干支...</div>
     <div class="theme-btn" onclick="document.body.classList.toggle('dark-theme'); event.stopPropagation();"></div>
 </div>
 
-<div class="modal" id="modal">
-    <div class="modal-box">
-        <h4>出生時間設定</h4>
-        <input type="datetime-local" id="dtInput">
-        <button class="btn-ok" onclick="updateFromInput()">確定</button>
-        <button style="width:100%; background:#888;" class="btn-ok" onclick="toggleModal(false)">取消</button>
+<div class="modal" id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); z-index:100; justify-content:center; align-items:center;">
+    <div style="background:var(--bg); padding:30px; border-radius:20px; border:2px solid var(--gold); text-align:center; width:300px;">
+        <h4 style="margin-top:0;">時間設定</h4>
+        <input type="datetime-local" id="dtInput" style="width:100%; padding:10px; border-radius:8px; border:1.2px solid var(--gold); background:transparent; color:inherit; margin-bottom:20px;">
+        <button onclick="updateInput()" style="width:100%; padding:12px; background:var(--green); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">確定</button>
+        <button onclick="toggleModal(false)" style="width:100%; margin-top:10px; background:#888; color:white; border:none; border-radius:8px; padding:10px; cursor:pointer;">取消</button>
     </div>
 </div>
 
 <script>
-    const CONFIG = { cx: 350, cy: 350, r0: 140, r1: 180, r2: 230, r3: 280 };
-    const ELEMENTS = ["木", "火", "土", "金", "水"];
-    const WX_COLOR = { "木": "wood", "火": "fire", "土": "earth", "金": "metal", "水": "water" };
+    const ELEMENTS = ["木", "火", "土", "金", "水"], WX_COLOR = { "木": "wood", "火": "fire", "土": "earth", "金": "metal", "水": "water" };
     const GOD_NAMES = ["比肩", "劫財", "食神", "傷官", "偏財", "正財", "七殺", "正官", "偏印", "正印"];
-    const STEMS_MATRIX = [["甲", "乙"], ["丙", "丁"], ["戊", "己"], ["庚", "辛"], ["壬", "癸"]];
-
-    let isGridMode = false, currentData = null;
+    const STEMS = [["甲", "乙"], ["丙", "丁"], ["戊", "己"], ["庚", "辛"], ["壬", "癸"]];
+    let isGrid = false, cur = null;
 
     function toggleModal(s) { document.getElementById('modal').style.display = s ? 'flex' : 'none'; }
-    function toggleMode() { isGridMode = !isGridMode; if(currentData) renderEngine(); }
-    function getNowString() { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); return n.toISOString().slice(0, 16); }
-    function getBaziString(timeStr) {
-        const t = timeStr.match(/\d+/g);
-        const solar = Solar.fromYmdHms(parseInt(t[0]), parseInt(t[1]), parseInt(t[2]), parseInt(t[3]), parseInt(t[4]), 0);
-        const bc = solar.getLunar().getEightChar();
+    function toggleMode() { isGrid = !isGrid; render(); }
+    function updateInput() { const v = document.getElementById('dtInput').value; if(v){ calc(v); toggleModal(false); } }
+    function getNowStr() { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); return n.toISOString().slice(0, 16); }
+    function getBaziStr(ts) {
+        const t = ts.match(/\d+/g);
+        const bc = Solar.fromYmdHms(parseInt(t[0]),parseInt(t[1]),parseInt(t[2]),parseInt(t[3]),parseInt(t[4]),0).getLunar().getEightChar();
         return `${bc.getYear()}年 ${bc.getMonth()}月 ${bc.getDay()}日 ${bc.getTime()}時`;
     }
 
-    function calculate(timeStr) {
-        try {
-            const t = timeStr.match(/\d+/g);
-            const solar = Solar.fromYmdHms(parseInt(t[0]), parseInt(t[1]), parseInt(t[2]), parseInt(t[3]), parseInt(t[4]), 0);
-            const bc = solar.getLunar().getEightChar();
-            const dayGan = bc.getDayGan();
-            let dmIdx = -1, dmPol = -1;
-            for (let i = 0; i < 5; i++) {
-                if (STEMS_MATRIX[i][0] === dayGan) { dmIdx = i; dmPol = 0; break; }
-                if (STEMS_MATRIX[i][1] === dayGan) { dmIdx = i; dmPol = 1; break; }
-            }
-            currentData = { dayGan, dayWx: ELEMENTS[dmIdx], dmIdx, dmPol, year: bc.getYear(), month: bc.getMonth(), day: bc.getDay(), time: bc.getTime(), timeStr };
-            renderEngine();
-        } catch (e) { console.error(e); }
+    function calc(ts) {
+        const t = ts.match(/\d+/g);
+        const s = Solar.fromYmdHms(parseInt(t[0]),parseInt(t[1]),parseInt(t[2]),parseInt(t[3]),parseInt(t[4]),0);
+        const bc = s.getLunar().getEightChar();
+        const dg = bc.getDayGan();
+        let di = -1, dp = -1;
+        for(let i=0;i<5;i++){ if(STEMS[i][0]===dg){di=i;dp=0;} if(STEMS[i][1]===dg){di=i;dp=1;} }
+        cur = { dg, dw: ELEMENTS[di], di, dp, year: bc.getYear(), month: bc.getMonth(), day: bc.getDay(), time: bc.getTime(), ts };
+        initDOM(); render();
     }
 
-    function updateFromInput() { const val = document.getElementById('dtInput').value; if (val) { calculate(val); toggleModal(false); } }
+    function initDOM() {
+        if(!cur) return;
+        for(let i=0; i<5; i++) {
+            const g = document.getElementById(`node-${i}`);
+            const targetIdx = (cur.di + i) % 5, targetWx = ELEMENTS[targetIdx];
+            g.innerHTML = `
+                <g class="sector-part">
+                    <path class="sector-bg-s"></path><path class="sector-bg-o"></path>
+                    <path class="sector-path"></path><path class="inner-arc-180"></path><path class="inner-arc-230"></path><path class="inner-radial-sep"></path>
+                    <text class="w-label" text-anchor="middle" dominant-baseline="middle" font-weight="900" font-size="22" style="fill:var(--${WX_COLOR[targetWx]})">${targetWx}</text>
+                    <g class="s-texts"></g>
+                </g>
+                <g class="card-part" style="opacity:0; transform: scale(0.5);">
+                    <rect class="c-bg-s" x="300" y="305" width="50" height="60" fill="var(--same-bg)"></rect>
+                    <rect class="c-bg-o" x="350" y="305" width="50" height="60" fill="var(--oppo-bg)"></rect>
+                    <rect class="card-bg" x="300" y="305" width="100" height="90"></rect>
+                    <line class="card-line" x1="300" y1="335" x2="400" y2="335"></line>
+                    <line class="card-line" x1="300" y1="365" x2="400" y2="365"></line>
+                    <line class="card-line" x1="350" y1="305" x2="350" y2="365"></line>
+                    <text class="c-t" x="325" y="320" text-anchor="middle" dominant-baseline="middle" font-size="14">${GOD_NAMES[i*2]}</text>
+                    <text class="c-t" x="375" y="320" text-anchor="middle" dominant-baseline="middle" font-size="14">${GOD_NAMES[i*2+1]}</text>
+                    <text class="c-s" x="325" y="350" text-anchor="middle" dominant-baseline="middle" font-weight="bold" font-size="16">${STEMS[targetIdx][(cur.dp+0)%2]}</text>
+                    <text class="c-s" x="375" y="350" text-anchor="middle" dominant-baseline="middle" font-weight="bold" font-size="16">${STEMS[targetIdx][(cur.dp+1)%2]}</text>
+                    <text class="c-title" x="350" y="380" text-anchor="middle" dominant-baseline="middle" font-weight="900" font-size="16" style="fill:var(--${WX_COLOR[targetWx]})">${targetWx}</text>
+                </g>
+            `;
+            const sPart = g.querySelector('.sector-part'), gap=10, gArc=310/5, sArc=gArc/2, sS=5+i*(gArc+gap), sE=sS+gArc, sM=sS+gArc/2;
+            const isT = (i===0||i===4), rot = isT? sM: sM+180;
+            sPart.querySelector('.sector-bg-s').setAttribute("d", getArc(sS, sS+sArc, 180, 280));
+            sPart.querySelector('.sector-bg-s').style.fill = "var(--same-bg)";
+            sPart.querySelector('.sector-bg-o').setAttribute("d", getArc(sS+sArc, sE, 180, 280));
+            sPart.querySelector('.sector-bg-o').style.fill = "var(--oppo-bg)";
+            sPart.querySelector('.sector-path').setAttribute("d", getArc(sS, sE, 140, 280));
+            sPart.querySelector('.inner-arc-180').setAttribute("d", getArcLine(sS, sE, 180));
+            sPart.querySelector('.inner-arc-180').setAttribute("class", "inner-grid");
+            sPart.querySelector('.inner-arc-230').setAttribute("d", getArcLine(sS, sE, 230));
+            sPart.querySelector('.inner-arc-230').setAttribute("class", "inner-grid");
+            const pStart = getXY(180, sS+sArc), pEnd = getXY(280, sS+sArc);
+            sPart.querySelector('.inner-radial-sep').setAttribute("d", `M ${pStart.x} ${pStart.y} L ${pEnd.x} ${pEnd.y}`);
+            sPart.querySelector('.inner-radial-sep').setAttribute("class", "inner-grid");
+            const wXY = getXY(160, sM), wL = sPart.querySelector('.w-label');
+            wL.setAttribute("x", wXY.x); wL.setAttribute("y", wXY.y);
+            wL.setAttribute("transform", `rotate(${rot},${wXY.x},${wXY.y})`);
+            const tG = sPart.querySelector('.s-texts');
+            for(let j=0; j<2; j++) {
+                const ssM = sS+j*sArc+sArc/2, ssRot = isT? ssM: ssM+180;
+                const p1 = getXY(205, ssM), p2 = getXY(255, ssM);
+                tG.appendChild(createSVGText(p1.x, p1.y, GOD_NAMES[i*2+j], "inner-label", ssRot));
+                tG.appendChild(createSVGText(p2.x, p2.y, STEMS[targetIdx][(cur.dp+j)%2]+targetWx, "outer-stem", ssRot));
+            }
+        }
+    }
 
-    function renderEngine() {
-        if(!currentData) return;
-        const d = currentData;
-        document.getElementById('bg-layer').innerHTML = '';
-        document.getElementById('gods-layer').innerHTML = '';
-        const dm = document.getElementById('dmDisplay');
-        dm.textContent = d.dayGan + d.dayWx;
-        dm.style.fill = `var(--${WX_COLOR[d.dayWx]})`;
-        const baziL1 = document.getElementById('baziLine1'), baziL2 = document.getElementById('baziLine2');
-
-        if (isGridMode) {
-            dm.setAttribute("y", "350");
-            baziL1.setAttribute("x", "350"); baziL1.setAttribute("y", "570");
-            baziL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月 <tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
-            baziL2.innerHTML = "";
-            renderCrossGrid(d.dmIdx, d.dmPol);
+    function render() {
+        if(!cur) return;
+        const d = cur, bG = document.getElementById('bazi-group'), bL1 = document.getElementById('baziL1'), bL2 = document.getElementById('baziL2');
+        const extras = document.getElementById('grid-extras'), dm = document.getElementById('dmDisplay');
+        dm.textContent = d.dg+d.dw; dm.style.fill = `var(--${WX_COLOR[d.dw]})`; extras.innerHTML = '';
+        const gridPos = [{x:460, y:240}, {x:630, y:350}, {x:350, y:480}, {x:130, y:350}, {x:350, y:100}];
+        if(isGrid) {
+            bG.setAttribute("transform", "translate(0, 190)"); 
+            bL1.setAttribute("x", 350); bL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月 <tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
+            bL2.innerHTML = "";
+            gridPos.forEach((p, i) => {
+                if(i===0) return;
+                const offsets = [[0,0], [135,-15], [-25,75], [-110,-15], [-25,-105]], labels = ["", "我生", "我剋", "剋我", "生我"];
+                let ex=p.x, ey=p.y; if(ex>350) ex-=50; else if(ex<350) ex+=50; if(ey>350) ey-=45; else if(ey<350) ey+=45;
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                line.setAttribute("d", `M 350 350 L ${ex} ${ey}`); line.setAttribute("class", "connect-line"); extras.appendChild(line);
+                const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                txt.setAttribute("x", 350+offsets[i][0]); txt.setAttribute("y", 350+offsets[i][1]);
+                txt.setAttribute("class", "relation-label"); txt.setAttribute("text-anchor", "middle"); txt.textContent = labels[i]; extras.appendChild(txt);
+            });
         } else {
-            dm.setAttribute("y", "340");
-            baziL1.setAttribute("x", "320"); baziL1.setAttribute("y", "375");
-            baziL2.setAttribute("x", "380"); baziL2.setAttribute("y", "400");
-            baziL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月`;
-            baziL2.innerHTML = `<tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
-            renderCompass(d.dmIdx, d.dmPol);
+            bG.setAttribute("transform", "translate(0, 0)");
+            bL1.setAttribute("x", 320); bL1.setAttribute("y", 395);
+            bL2.setAttribute("x", 380); bL2.setAttribute("y", 420);
+            bL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月`;
+            bL2.innerHTML = `<tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
         }
-        document.getElementById('dp').innerText = "設定：" + d.timeStr.replace('T', ' ');
+        for(let i=0; i<5; i++) {
+            const g = document.getElementById(`node-${i}`), s = g.querySelector('.sector-part'), c = g.querySelector('.card-part');
+            if(isGrid) { g.setAttribute("transform", `translate(${gridPos[i].x-350}, ${gridPos[i].y-350})`); s.style.opacity = "0"; s.style.transform = "scale(0.6)"; c.style.opacity = "1"; c.style.transform = "scale(1)"; }
+            else { g.setAttribute("transform", "translate(0,0)"); s.style.opacity = "1"; s.style.transform = "scale(1)"; c.style.opacity = "0"; c.style.transform = "scale(0.6)"; }
+        }
+        document.getElementById('dp').innerText = "設定：" + d.ts.replace('T', ' ');
     }
 
-    function renderCrossGrid(dmIdx, dmPol) {
-        const layer = document.getElementById('gods-layer'), bgLayer = document.getElementById('bg-layer');
-        // 【核心修正】：交換 gIdx 3 與 4 的定義
-        // 原本：3=剋我(上), 4=生我(左)
-        // 修正：3=生我(上), 4=剋我(左) -> 達成順時針：生我(上) -> 我生(右) -> 我剋(下) -> 剋我(左)
-        const pos = [
-            { gIdx: 0, x: 460, y: 240, label: "同我" }, 
-            { gIdx: 1, x: 630, y: 350, label: "我生" }, 
-            { gIdx: 2, x: 350, y: 480, label: "我剋" }, 
-            { gIdx: 4, x: 350, y: 100, label: "生我" }, // 原本是 gIdx 3
-            { gIdx: 3, x: 130, y: 350, label: "剋我" }  // 原本是 gIdx 4
-        ];
-
-        pos.forEach(p => {
-            if(p.gIdx === 0) return;
-            let ex = p.x, ey = p.y;
-            if (p.x > 350) ex -= 50; else if (p.x < 350) ex += 50;
-            if (p.y > 350) ey -= 45; else if (p.y < 350) ey += 45;
-            
-            const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            line.setAttribute("d", `M 350 350 L ${ex} ${ey}`);
-            line.setAttribute("class", "connect-line");
-            bgLayer.appendChild(line);
-
-            let lx = 350, ly = 350;
-            // 根據標籤內容決定拉伸距離
-            if (p.label === "我生") { lx += 135; ly -= 15; }
-            else if (p.label === "剋我") { lx -= 110; ly -= 15; }
-            else if (p.label === "我剋") { ly += 75; lx -= 25; }
-            else if (p.label === "生我") { ly -= 105; lx -= 25; }
-            bgLayer.appendChild(createText(lx, ly, p.label, "relation-label"));
-        });
-        pos.forEach(p => drawCard(layer, p.x, p.y, p.gIdx, dmIdx, dmPol));
+    function getXY(r, d) { const ra = (d-90)*Math.PI/180; return { x: 350+r*Math.cos(ra), y: 350+r*Math.sin(ra) }; }
+    function getArc(s, e, r1, r2) {
+        const f = (r, d) => { const ra = (d-90)*Math.PI/180; return { x: 350+r*Math.cos(ra), y: 350+r*Math.sin(ra) }; };
+        const p1 = f(r1, s), p2 = f(r1, e), p3 = f(r2, e), p4 = f(r2, s);
+        return `M ${p1.x} ${p1.y} A ${r1} ${r1} 0 0 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${r2} ${r2} 0 0 0 ${p4.x} ${p4.y} Z`;
     }
-
-    function drawCard(layer, cx, cy, gIdx, dmIdx, dmPol) {
-        const w = 100, h = 90, x = cx - w/2, y = cy - h/2;
-        const targetIdx = (dmIdx + gIdx) % 5, group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        for (let i = 0; i < 2; i++) {
-            const cb = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            cb.setAttribute("x", x + (i === 0 ? 0 : w/2)); cb.setAttribute("y", y);
-            cb.setAttribute("width", w/2); cb.setAttribute("height", 60);
-            cb.style.fill = i === 0 ? "var(--same-bg)" : "var(--oppo-bg)";
-            group.appendChild(cb);
-        }
-        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        rect.setAttribute("x", x); rect.setAttribute("y", y); rect.setAttribute("width", w); rect.setAttribute("height", h);
-        rect.setAttribute("class", "card-bg"); group.appendChild(rect);
-        [[x, y+30, x+w, y+30], [x, y+60, x+w, y+60], [x+w/2, y, x+w/2, y+60]].forEach(l => {
-            const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            ln.setAttribute("x1", l[0]); ln.setAttribute("y1", l[1]); ln.setAttribute("x2", l[2]); ln.setAttribute("y2", l[3]);
-            ln.setAttribute("class", "card-line"); group.appendChild(ln);
-        });
-        for (let i = 0; i < 2; i++) {
-            const px = x + (i === 0 ? w/4 : (w/4)*3);
-            group.appendChild(createText(px, y + 15, GOD_NAMES[gIdx * 2 + i], "card-text"));
-            group.appendChild(createText(px, y + 45, STEMS_MATRIX[targetIdx][(dmPol + i) % 2], "card-stem"));
-        }
-        const wx = createText(cx, y + 75, ELEMENTS[targetIdx], "card-title");
-        wx.style.fill = `var(--${WX_COLOR[ELEMENTS[targetIdx]]})`;
-        group.appendChild(wx); layer.appendChild(group);
+    function getArcLine(s, e, r) { const p1=getXY(r,s), p2=getXY(r,e); return `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`; }
+    function createSVGText(x, y, txt, cls, rot) {
+        const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("class", cls);
+        t.setAttribute("text-anchor", "middle"); t.setAttribute("dominant-baseline", "middle");
+        t.setAttribute("transform", `rotate(${rot},${x},${y})`); t.textContent = txt; return t;
     }
-
-    function renderCompass(dmIdx, dmPol) {
-        const layer = document.getElementById('gods-layer'), gap = 10, gArc = 310 / 5, sArc = gArc / 2;
-        for (let gIdx = 0; gIdx < 5; gIdx++) {
-            const gS = 5 + gIdx * (gArc + gap), gE = gS + gArc, gM = gS + (gArc / 2);
-            const isTop = (gIdx === 0 || gIdx === 4), gRot = isTop ? gM : gM + 180;
-            const targetIdx = (dmIdx + gIdx) % 5;
-            const wp = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            wp.setAttribute("d", getArcPath(gS, gE, CONFIG.r0, CONFIG.r1));
-            wp.setAttribute("class", "sector-path"); layer.appendChild(wp);
-            const wt = createTextRotated((CONFIG.r0 + CONFIG.r1)/2, gM, ELEMENTS[targetIdx], "wuxing-label", gRot);
-            wt.style.fill = `var(--${WX_COLOR[ELEMENTS[targetIdx]]})`; layer.appendChild(wt);
-            for (let i = 0; i < 2; i++) {
-                const sS = gS + i * sArc, sE = sS + sArc, mid = sS + (sArc / 2), rot = isTop ? mid : mid + 180;
-                const sp = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                sp.setAttribute("d", getArcPath(sS, sE, CONFIG.r1, CONFIG.r3));
-                sp.setAttribute("class", "sector-path"); sp.style.fill = i === 0 ? "var(--same-bg)" : "var(--oppo-bg)";
-                layer.appendChild(sp);
-                const gd = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                gd.setAttribute("d", getArcLine(sS, sE, CONFIG.r2)); gd.setAttribute("class", "inner-grid"); layer.appendChild(gd);
-                layer.appendChild(createTextRotated((CONFIG.r1 + CONFIG.r2)/2, mid, GOD_NAMES[gIdx * 2 + i], "inner-label", rot));
-                layer.appendChild(createTextRotated((CONFIG.r2 + CONFIG.r3)/2, mid, STEMS_MATRIX[targetIdx][(dmPol + i) % 2] + ELEMENTS[targetIdx], "outer-stem", rot));
-            }
-        }
-    }
-
-    function createText(x, y, txt, cls) { const t = document.createElementNS("http://www.w3.org/2000/svg", "text"); t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("class", cls); t.setAttribute("text-anchor", "middle"); t.setAttribute("dominant-baseline", "middle"); t.textContent = txt; return t; }
-    function createTextRotated(r, deg, txt, cls, rot) { const rad = (deg - 90) * Math.PI / 180, x = 350 + r * Math.cos(rad), y = 350 + r * Math.sin(rad); const t = createText(x, y, txt, cls); t.setAttribute("transform", `rotate(${rot}, ${x}, ${y})`); return t; }
-    function getArcPath(s, e, r1, r2) { const f = (r, d) => { const ra = (d - 90) * Math.PI / 180; return { x: 350 + r * Math.cos(ra), y: 350 + r * Math.sin(ra) }; }; const p1 = f(r1, s), p2 = f(r1, e), p3 = f(r2, e), p4 = f(r2, s); return `M ${p1.x} ${p1.y} A ${r1} ${r1} 0 0 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${r2} ${r2} 0 0 0 ${p4.x} ${p4.y} Z`; }
-    function getArcLine(s, e, r) { const f = (rad, d) => { const ra = (d - 90) * Math.PI / 180; return { x: 350 + rad * Math.cos(ra), y: 350 + rad * Math.sin(ra) }; }; const p1 = f(r, s), p2 = f(r, e); return `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`; }
-
-    window.onload = () => { const n = getNowString(); document.getElementById('dp-reference').innerText = "基準：" + getBaziString(n); document.getElementById('dtInput').value = n; calculate(n); };
+    window.onload = () => { const n = getNowStr(); document.getElementById('dp-ref').innerText = "今日：" + getBaziStr(n); document.getElementById('dtInput').value = n; calc(n); };
 </script>
 </body>
 </html>
