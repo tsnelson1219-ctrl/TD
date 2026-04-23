@@ -9,62 +9,30 @@
         :root {
             --bg: #e9e4d1; --gold: #5d5d4d; --green: #2e5a4b; --red: #a64d4d;
             --wood: #2d5d4d; --fire: #a64d4d; --earth: #8c6d31; --metal: #5a5a5a; --water: #2d4a5d;
-            --same-bg: rgba(46, 90, 75, 0.15); 
-            --oppo-bg: rgba(166, 77, 77, 0.15); 
+            --same-bg: rgba(46, 90, 75, 0.15); --oppo-bg: rgba(166, 77, 77, 0.15); 
         }
         body.dark-theme { --bg: #0f0e0c; --gold: #d4a75b; --green: #4fac8d; --red: #ff3e3e; --same-bg: rgba(79, 172, 141, 0.2); --oppo-bg: rgba(255, 62, 62, 0.2); }
-
-        body { 
-            background: var(--bg); color: var(--gold); 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            min-height: 100vh; margin: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            overflow: hidden; transition: all 0.4s;
-        }
-
-        .disc-wrapper { 
-            position: relative; width: min(95vmin, 700px); height: min(95vmin, 700px); 
-            display: flex; justify-content: center; align-items: center; cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { background: var(--bg); color: var(--gold); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; overflow: hidden; transition: all 0.4s; }
+        .disc-wrapper { position: relative; width: min(95vmin, 700px); height: min(95vmin, 700px); display: flex; justify-content: center; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         svg { width: 100%; height: 100%; overflow: visible; }
-
         .sector-path { fill: none; stroke: var(--gold); stroke-width: 1.2; transition: all 0.5s ease; }
         .inner-grid { fill: none; stroke: var(--gold); stroke-width: 0.8; opacity: 0.5; }
         .wuxing-label { font-size: 22px; font-weight: 900; letter-spacing: 2px; }
         .inner-label { font-size: 13.5px; fill: var(--gold); }
         .outer-stem { font-size: 15.5px; fill: var(--gold); font-weight: bold; }
-        
         .card-bg { fill: rgba(93, 93, 77, 0.05); stroke: var(--gold); stroke-width: 1.5; rx: 8px; }
         .card-line { fill: none; stroke: var(--gold); stroke-width: 0.8; opacity: 0.6; }
         .card-title { font-size: 16px; font-weight: 900; }
         .card-text { font-size: 14px; fill: var(--gold); }
         .card-stem { font-size: 16px; font-weight: bold; fill: var(--gold); }
-        
         .connect-line { fill: none; stroke: var(--gold); stroke-width: 1.5; opacity: 0.3; stroke-dasharray: 4 4; }
         .relation-label { font-size: 18px; fill: var(--gold); opacity: 0.9; font-weight: 900; letter-spacing: 2px;}
-
         .dm-main { font-size: 60px; font-weight: 900; text-anchor: middle; transition: all 0.4s ease; }
         .bazi-sub { font-size: 14px; fill: var(--gold); text-anchor: middle; opacity: 0.9; transition: all 0.4s ease; }
-
         .footer { margin-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 20px; width: 100%; }
-        
-        .date-pill { 
-            padding: 8px 20px; border: 1.5px solid var(--gold); border-radius: 30px; 
-            background: rgba(93, 93, 77, 0.05); font-size: 13.5px; cursor: pointer;
-            display: inline-block; width: fit-content; max-width: 90%; text-align: center; white-space: nowrap; font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        /* 基準對照區：加粗、干支資訊 */
-        .date-pill.ref-mode {
-            border-width: 3.5px; 
-            cursor: default;
-            background: transparent;
-            color: var(--red); /* 突出顯示基準干支 */
-        }
-
+        .date-pill { padding: 8px 20px; border: 1.5px solid var(--gold); border-radius: 30px; background: rgba(93, 93, 77, 0.05); font-size: 13.5px; cursor: pointer; display: inline-block; width: fit-content; max-width: 90%; text-align: center; white-space: nowrap; font-weight: bold; }
+        .date-pill.ref-mode { border-width: 3.5px; cursor: default; background: transparent; color: var(--red); }
         .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid var(--gold); cursor: pointer; opacity: 0.5; }
-        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); z-index: 100; justify-content: center; align-items: center; }
         .modal-box { background: var(--bg); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); text-align: center; width: 300px; }
         input[type="datetime-local"] { width: 100%; padding: 10px; border: 1.2px solid var(--gold); border-radius: 8px; background: transparent; color: inherit; font-size: 15px; margin-bottom: 20px; }
@@ -111,18 +79,11 @@
 
     function toggleModal(s) { document.getElementById('modal').style.display = s ? 'flex' : 'none'; }
     function toggleMode() { isGridMode = !isGridMode; if(currentData) renderEngine(); }
-
-    function getNowString() {
-        const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
-        return n.toISOString().slice(0, 16);
-    }
-
-    // 核心工具：將日期字串轉為干支字串
+    function getNowString() { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); return n.toISOString().slice(0, 16); }
     function getBaziString(timeStr) {
         const t = timeStr.match(/\d+/g);
         const solar = Solar.fromYmdHms(parseInt(t[0]), parseInt(t[1]), parseInt(t[2]), parseInt(t[3]), parseInt(t[4]), 0);
-        const lunar = solar.getLunar();
-        const bc = lunar.getEightChar();
+        const bc = solar.getLunar().getEightChar();
         return `${bc.getYear()}年 ${bc.getMonth()}月 ${bc.getDay()}日 ${bc.getTime()}時`;
     }
 
@@ -130,168 +91,141 @@
         try {
             const t = timeStr.match(/\d+/g);
             const solar = Solar.fromYmdHms(parseInt(t[0]), parseInt(t[1]), parseInt(t[2]), parseInt(t[3]), parseInt(t[4]), 0);
-            const lunar = solar.getLunar();
-            const bc = lunar.getEightChar();
+            const bc = solar.getLunar().getEightChar();
             const dayGan = bc.getDayGan();
-            let dmElementIdx = -1, dmPolarity = -1;
+            let dmIdx = -1, dmPol = -1;
             for (let i = 0; i < 5; i++) {
-                if (STEMS_MATRIX[i][0] === dayGan) { dmElementIdx = i; dmPolarity = 0; break; }
-                if (STEMS_MATRIX[i][1] === dayGan) { dmElementIdx = i; dmPolarity = 1; break; }
+                if (STEMS_MATRIX[i][0] === dayGan) { dmIdx = i; dmPol = 0; break; }
+                if (STEMS_MATRIX[i][1] === dayGan) { dmIdx = i; dmPol = 1; break; }
             }
-            currentData = { dayGan, dayWx: ELEMENTS[dmElementIdx], dmElementIdx, dmPolarity, year: bc.getYear(), month: bc.getMonth(), day: bc.getDay(), time: bc.getTime(), timeStr };
+            currentData = { dayGan, dayWx: ELEMENTS[dmIdx], dmIdx, dmPol, year: bc.getYear(), month: bc.getMonth(), day: bc.getDay(), time: bc.getTime(), timeStr };
             renderEngine();
-        } catch (e) { alert("錯誤：" + e.message); }
+        } catch (e) { console.error(e); }
     }
 
-    function updateFromInput() { 
-        const val = document.getElementById('dtInput').value; 
-        if (val) { calculate(val); toggleModal(false); } 
-    }
+    function updateFromInput() { const val = document.getElementById('dtInput').value; if (val) { calculate(val); toggleModal(false); } }
 
     function renderEngine() {
         if(!currentData) return;
         const d = currentData;
         document.getElementById('bg-layer').innerHTML = '';
         document.getElementById('gods-layer').innerHTML = '';
-
         const dm = document.getElementById('dmDisplay');
         dm.textContent = d.dayGan + d.dayWx;
         dm.style.fill = `var(--${WX_COLOR[d.dayWx]})`;
-
-        const baziL1 = document.getElementById('baziLine1');
-        const baziL2 = document.getElementById('baziLine2');
+        const baziL1 = document.getElementById('baziLine1'), baziL2 = document.getElementById('baziLine2');
 
         if (isGridMode) {
             dm.setAttribute("y", "350");
             baziL1.setAttribute("x", "350"); baziL1.setAttribute("y", "570");
             baziL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月 <tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
             baziL2.innerHTML = "";
-            renderCrossGrid(d.dmElementIdx, d.dmPolarity);
+            renderCrossGrid(d.dmIdx, d.dmPol);
         } else {
             dm.setAttribute("y", "340");
             baziL1.setAttribute("x", "320"); baziL1.setAttribute("y", "375");
             baziL2.setAttribute("x", "380"); baziL2.setAttribute("y", "400");
             baziL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月`;
             baziL2.innerHTML = `<tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
-            renderCompass(d.dmElementIdx, d.dmPolarity);
+            renderCompass(d.dmIdx, d.dmPol);
         }
-        
         document.getElementById('dp').innerText = "設定：" + d.timeStr.replace('T', ' ');
     }
 
-    function renderCrossGrid(dmElementIdx, dmPolarity) {
+    function renderCrossGrid(dmIdx, dmPol) {
         const layer = document.getElementById('gods-layer'), bgLayer = document.getElementById('bg-layer');
-        const pos = [{ gIdx: 0, x: 460, y: 240, label: "同我" }, { gIdx: 1, x: 630, y: 350, label: "我生" }, { gIdx: 2, x: 350, y: 480, label: "我剋" }, { gIdx: 3, x: 350, y: 100, label: "剋我" }, { gIdx: 4, x: 130, y: 350, label: "生我" }];
+        // 【核心修正】：交換 gIdx 3 與 4 的定義
+        // 原本：3=剋我(上), 4=生我(左)
+        // 修正：3=生我(上), 4=剋我(左) -> 達成順時針：生我(上) -> 我生(右) -> 我剋(下) -> 剋我(左)
+        const pos = [
+            { gIdx: 0, x: 460, y: 240, label: "同我" }, 
+            { gIdx: 1, x: 630, y: 350, label: "我生" }, 
+            { gIdx: 2, x: 350, y: 480, label: "我剋" }, 
+            { gIdx: 4, x: 350, y: 100, label: "生我" }, // 原本是 gIdx 3
+            { gIdx: 3, x: 130, y: 350, label: "剋我" }  // 原本是 gIdx 4
+        ];
 
         pos.forEach(p => {
             if(p.gIdx === 0) return;
             let ex = p.x, ey = p.y;
-            if (p.gIdx === 1) ex -= 50; else if (p.gIdx === 4) ex += 50; else if (p.gIdx === 2) ey -= 45; else if (p.gIdx === 3) ey += 45;
+            if (p.x > 350) ex -= 50; else if (p.x < 350) ex += 50;
+            if (p.y > 350) ey -= 45; else if (p.y < 350) ey += 45;
+            
             const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
             line.setAttribute("d", `M 350 350 L ${ex} ${ey}`);
             line.setAttribute("class", "connect-line");
             bgLayer.appendChild(line);
 
             let lx = 350, ly = 350;
-            if (p.gIdx === 1) { lx += 135; ly -= 15; } else if (p.gIdx === 4) { lx -= 110; ly -= 15; } else if (p.gIdx === 2) { ly += 75; lx -= 25; } else if (p.gIdx === 3) { ly -= 105; lx -= 25; }
+            // 根據標籤內容決定拉伸距離
+            if (p.label === "我生") { lx += 135; ly -= 15; }
+            else if (p.label === "剋我") { lx -= 110; ly -= 15; }
+            else if (p.label === "我剋") { ly += 75; lx -= 25; }
+            else if (p.label === "生我") { ly -= 105; lx -= 25; }
             bgLayer.appendChild(createText(lx, ly, p.label, "relation-label"));
         });
-        pos.forEach(p => drawCard(layer, p.x, p.y, p.gIdx, dmElementIdx, dmPolarity));
+        pos.forEach(p => drawCard(layer, p.x, p.y, p.gIdx, dmIdx, dmPol));
     }
 
-    function drawCard(layer, cx, cy, gIdx, dmElementIdx, dmPolarity) {
+    function drawCard(layer, cx, cy, gIdx, dmIdx, dmPol) {
         const w = 100, h = 90, x = cx - w/2, y = cy - h/2;
-        const targetElementIdx = (dmElementIdx + gIdx) % 5;
-        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-
+        const targetIdx = (dmIdx + gIdx) % 5, group = document.createElementNS("http://www.w3.org/2000/svg", "g");
         for (let i = 0; i < 2; i++) {
-            const cellBg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            cellBg.setAttribute("x", x + (i === 0 ? 0 : w/2)); cellBg.setAttribute("y", y);
-            cellBg.setAttribute("width", w/2); cellBg.setAttribute("height", 60);
-            cellBg.style.fill = i === 0 ? "var(--same-bg)" : "var(--oppo-bg)";
-            group.appendChild(cellBg);
+            const cb = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            cb.setAttribute("x", x + (i === 0 ? 0 : w/2)); cb.setAttribute("y", y);
+            cb.setAttribute("width", w/2); cb.setAttribute("height", 60);
+            cb.style.fill = i === 0 ? "var(--same-bg)" : "var(--oppo-bg)";
+            group.appendChild(cb);
         }
-
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         rect.setAttribute("x", x); rect.setAttribute("y", y); rect.setAttribute("width", w); rect.setAttribute("height", h);
         rect.setAttribute("class", "card-bg"); group.appendChild(rect);
-
-        const lines = [[x, y+30, x+w, y+30], [x, y+60, x+w, y+60], [x+w/2, y, x+w/2, y+60]];
-        lines.forEach(l => {
+        [[x, y+30, x+w, y+30], [x, y+60, x+w, y+60], [x+w/2, y, x+w/2, y+60]].forEach(l => {
             const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
             ln.setAttribute("x1", l[0]); ln.setAttribute("y1", l[1]); ln.setAttribute("x2", l[2]); ln.setAttribute("y2", l[3]);
             ln.setAttribute("class", "card-line"); group.appendChild(ln);
         });
-
         for (let i = 0; i < 2; i++) {
             const px = x + (i === 0 ? w/4 : (w/4)*3);
             group.appendChild(createText(px, y + 15, GOD_NAMES[gIdx * 2 + i], "card-text"));
-            group.appendChild(createText(px, y + 45, STEMS_MATRIX[targetElementIdx][(dmPolarity + i) % 2], "card-stem"));
+            group.appendChild(createText(px, y + 45, STEMS_MATRIX[targetIdx][(dmPol + i) % 2], "card-stem"));
         }
-        const wxText = createText(cx, y + 75, ELEMENTS[targetElementIdx], "card-title");
-        wxText.style.fill = `var(--${WX_COLOR[ELEMENTS[targetElementIdx]]})`;
-        group.appendChild(wxText);
-        layer.appendChild(group);
+        const wx = createText(cx, y + 75, ELEMENTS[targetIdx], "card-title");
+        wx.style.fill = `var(--${WX_COLOR[ELEMENTS[targetIdx]]})`;
+        group.appendChild(wx); layer.appendChild(group);
     }
 
-    function renderCompass(dmElementIdx, dmPolarity) {
-        const layer = document.getElementById('gods-layer'), gap = 10, groupArc = (310) / 5, sectorArc = groupArc / 2;
+    function renderCompass(dmIdx, dmPol) {
+        const layer = document.getElementById('gods-layer'), gap = 10, gArc = 310 / 5, sArc = gArc / 2;
         for (let gIdx = 0; gIdx < 5; gIdx++) {
-            const gStart = 5 + gIdx * (groupArc + gap), gEnd = gStart + groupArc, gMid = gStart + (groupArc / 2);
-            const isTop = (gIdx === 0 || gIdx === 4), groupRot = isTop ? gMid : gMid + 180;
-            const targetElementIdx = (dmElementIdx + gIdx) % 5;
-            
+            const gS = 5 + gIdx * (gArc + gap), gE = gS + gArc, gM = gS + (gArc / 2);
+            const isTop = (gIdx === 0 || gIdx === 4), gRot = isTop ? gM : gM + 180;
+            const targetIdx = (dmIdx + gIdx) % 5;
             const wp = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            wp.setAttribute("d", getArcPath(gStart, gEnd, CONFIG.r0, CONFIG.r1));
+            wp.setAttribute("d", getArcPath(gS, gE, CONFIG.r0, CONFIG.r1));
             wp.setAttribute("class", "sector-path"); layer.appendChild(wp);
-            const wt = createTextRotated((CONFIG.r0 + CONFIG.r1)/2, gMid, ELEMENTS[targetElementIdx], "wuxing-label", groupRot);
-            wt.style.fill = `var(--${WX_COLOR[ELEMENTS[targetElementIdx]]})`; layer.appendChild(wt);
-
+            const wt = createTextRotated((CONFIG.r0 + CONFIG.r1)/2, gM, ELEMENTS[targetIdx], "wuxing-label", gRot);
+            wt.style.fill = `var(--${WX_COLOR[ELEMENTS[targetIdx]]})`; layer.appendChild(wt);
             for (let i = 0; i < 2; i++) {
-                const sStart = gStart + i * sectorArc, sEnd = sStart + sectorArc, mid = sStart + (sectorArc / 2), rotation = isTop ? mid : mid + 180;
+                const sS = gS + i * sArc, sE = sS + sArc, mid = sS + (sArc / 2), rot = isTop ? mid : mid + 180;
                 const sp = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                sp.setAttribute("d", getArcPath(sStart, sEnd, CONFIG.r1, CONFIG.r3));
-                sp.setAttribute("class", "sector-path"); 
-                sp.style.fill = i === 0 ? "var(--same-bg)" : "var(--oppo-bg)";
+                sp.setAttribute("d", getArcPath(sS, sE, CONFIG.r1, CONFIG.r3));
+                sp.setAttribute("class", "sector-path"); sp.style.fill = i === 0 ? "var(--same-bg)" : "var(--oppo-bg)";
                 layer.appendChild(sp);
-
-                const grid = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                grid.setAttribute("d", getArcLine(sStart, sEnd, CONFIG.r2));
-                grid.setAttribute("class", "inner-grid"); layer.appendChild(grid);
-
-                layer.appendChild(createTextRotated((CONFIG.r1 + CONFIG.r2)/2, mid, GOD_NAMES[gIdx * 2 + i], "inner-label", rotation));
-                layer.appendChild(createTextRotated((CONFIG.r2 + CONFIG.r3)/2, mid, STEMS_MATRIX[targetElementIdx][(dmPolarity + i) % 2] + ELEMENTS[targetElementIdx], "outer-stem", rotation));
+                const gd = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                gd.setAttribute("d", getArcLine(sS, sE, CONFIG.r2)); gd.setAttribute("class", "inner-grid"); layer.appendChild(gd);
+                layer.appendChild(createTextRotated((CONFIG.r1 + CONFIG.r2)/2, mid, GOD_NAMES[gIdx * 2 + i], "inner-label", rot));
+                layer.appendChild(createTextRotated((CONFIG.r2 + CONFIG.r3)/2, mid, STEMS_MATRIX[targetIdx][(dmPol + i) % 2] + ELEMENTS[targetIdx], "outer-stem", rot));
             }
         }
     }
 
-    function createText(x, y, txt, cls) {
-        const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("class", cls); t.setAttribute("text-anchor", "middle"); t.setAttribute("dominant-baseline", "middle");
-        t.textContent = txt; return t;
-    }
-    function createTextRotated(r, deg, txt, cls, rot) {
-        const rad = (deg - 90) * Math.PI / 180, x = 350 + r * Math.cos(rad), y = 350 + r * Math.sin(rad);
-        const t = createText(x, y, txt, cls); t.setAttribute("transform", `rotate(${rot}, ${x}, ${y})`); return t;
-    }
-    function getArcPath(s, e, r1, r2) {
-        const f = (r, d) => { const ra = (d - 90) * Math.PI / 180; return { x: 350 + r * Math.cos(ra), y: 350 + r * Math.sin(ra) }; };
-        const p1 = f(r1, s), p2 = f(r1, e), p3 = f(r2, e), p4 = f(r2, s);
-        return `M ${p1.x} ${p1.y} A ${r1} ${r1} 0 0 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${r2} ${r2} 0 0 0 ${p4.x} ${p4.y} Z`;
-    }
-    function getArcLine(s, e, r) {
-        const f = (rad, d) => { const ra = (d - 90) * Math.PI / 180; return { x: 350 + rad * Math.cos(ra), y: 350 + rad * Math.sin(ra) }; };
-        const p1 = f(r, s), p2 = f(r, e);
-        return `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`;
-    }
+    function createText(x, y, txt, cls) { const t = document.createElementNS("http://www.w3.org/2000/svg", "text"); t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("class", cls); t.setAttribute("text-anchor", "middle"); t.setAttribute("dominant-baseline", "middle"); t.textContent = txt; return t; }
+    function createTextRotated(r, deg, txt, cls, rot) { const rad = (deg - 90) * Math.PI / 180, x = 350 + r * Math.cos(rad), y = 350 + r * Math.sin(rad); const t = createText(x, y, txt, cls); t.setAttribute("transform", `rotate(${rot}, ${x}, ${y})`); return t; }
+    function getArcPath(s, e, r1, r2) { const f = (r, d) => { const ra = (d - 90) * Math.PI / 180; return { x: 350 + r * Math.cos(ra), y: 350 + r * Math.sin(ra) }; }; const p1 = f(r1, s), p2 = f(r1, e), p3 = f(r2, e), p4 = f(r2, s); return `M ${p1.x} ${p1.y} A ${r1} ${r1} 0 0 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${r2} ${r2} 0 0 0 ${p4.x} ${p4.y} Z`; }
+    function getArcLine(s, e, r) { const f = (rad, d) => { const ra = (d - 90) * Math.PI / 180; return { x: 350 + rad * Math.cos(ra), y: 350 + rad * Math.sin(ra) }; }; const p1 = f(r, s), p2 = f(r, e); return `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`; }
 
-    window.onload = () => {
-        const nowStr = getNowString();
-        // 核心更正：基準時間改為顯示干支資訊
-        document.getElementById('dp-reference').innerText = "基準：" + getBaziString(nowStr);
-        document.getElementById('dtInput').value = nowStr;
-        calculate(nowStr);
-    };
+    window.onload = () => { const n = getNowString(); document.getElementById('dp-reference').innerText = "基準：" + getBaziString(n); document.getElementById('dtInput').value = n; calculate(n); };
 </script>
 </body>
 </html>
