@@ -9,8 +9,8 @@
         :root {
             --bg: #e9e4d1; --gold: #5d5d4d; --green: #2e5a4b; --red: #a64d4d;
             --wood: #2d5d4d; --fire: #a64d4d; --earth: #8c6d31; --metal: #5a5a5a; --water: #2d4a5d;
-            --same-bg: rgba(46, 90, 75, 0.15); /* 同性淺綠 */
-            --oppo-bg: rgba(166, 77, 77, 0.15); /* 異性淺紅 */
+            --same-bg: rgba(46, 90, 75, 0.15); 
+            --oppo-bg: rgba(166, 77, 77, 0.15); 
         }
         body.dark-theme { --bg: #0f0e0c; --gold: #d4a75b; --green: #4fac8d; --red: #ff3e3e; --same-bg: rgba(79, 172, 141, 0.2); --oppo-bg: rgba(255, 62, 62, 0.2); }
 
@@ -46,12 +46,23 @@
         .dm-main { font-size: 60px; font-weight: 900; text-anchor: middle; transition: all 0.4s ease; }
         .bazi-sub { font-size: 14px; fill: var(--gold); text-anchor: middle; opacity: 0.9; transition: all 0.4s ease; }
 
-        .footer { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .footer { margin-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: 20px; width: 100%; }
+        
         .date-pill { 
-            padding: 10px 24px; border: 1.5px solid var(--gold); border-radius: 30px; 
-            background: rgba(93, 93, 77, 0.05); font-size: 15px; cursor: pointer;
-            display: inline-block; width: auto; text-align: center; white-space: nowrap; font-weight: bold;
+            padding: 8px 20px; border: 1.5px solid var(--gold); border-radius: 30px; 
+            background: rgba(93, 93, 77, 0.05); font-size: 13.5px; cursor: pointer;
+            display: inline-block; width: fit-content; max-width: 90%; text-align: center; white-space: nowrap; font-weight: bold;
+            transition: all 0.2s;
         }
+
+        /* 基準對照區：加粗、干支資訊 */
+        .date-pill.ref-mode {
+            border-width: 3.5px; 
+            cursor: default;
+            background: transparent;
+            color: var(--red); /* 突出顯示基準干支 */
+        }
+
         .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid var(--gold); cursor: pointer; opacity: 0.5; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); z-index: 100; justify-content: center; align-items: center; }
@@ -75,7 +86,8 @@
 </div>
 
 <div class="footer">
-    <div class="date-pill" id="dp" onclick="toggleModal(true); event.stopPropagation();">讀取時間...</div>
+    <div class="date-pill" id="dp" onclick="toggleModal(true); event.stopPropagation();">設定...</div>
+    <div class="date-pill ref-mode" id="dp-reference">基準干支...</div>
     <div class="theme-btn" onclick="document.body.classList.toggle('dark-theme'); event.stopPropagation();"></div>
 </div>
 
@@ -95,16 +107,23 @@
     const GOD_NAMES = ["比肩", "劫財", "食神", "傷官", "偏財", "正財", "七殺", "正官", "偏印", "正印"];
     const STEMS_MATRIX = [["甲", "乙"], ["丙", "丁"], ["戊", "己"], ["庚", "辛"], ["壬", "癸"]];
 
-    let isGridMode = true, currentData = null;
+    let isGridMode = false, currentData = null;
 
     function toggleModal(s) { document.getElementById('modal').style.display = s ? 'flex' : 'none'; }
     function toggleMode() { isGridMode = !isGridMode; if(currentData) renderEngine(); }
 
-    function setNowAndCalc() {
+    function getNowString() {
         const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
-        const localTime = n.toISOString().slice(0, 16);
-        document.getElementById('dtInput').value = localTime;
-        return localTime;
+        return n.toISOString().slice(0, 16);
+    }
+
+    // 核心工具：將日期字串轉為干支字串
+    function getBaziString(timeStr) {
+        const t = timeStr.match(/\d+/g);
+        const solar = Solar.fromYmdHms(parseInt(t[0]), parseInt(t[1]), parseInt(t[2]), parseInt(t[3]), parseInt(t[4]), 0);
+        const lunar = solar.getLunar();
+        const bc = lunar.getEightChar();
+        return `${bc.getYear()}年 ${bc.getMonth()}月 ${bc.getDay()}日 ${bc.getTime()}時`;
     }
 
     function calculate(timeStr) {
@@ -124,13 +143,14 @@
         } catch (e) { alert("錯誤：" + e.message); }
     }
 
-    function updateFromInput() { const val = document.getElementById('dtInput').value; if (val) { calculate(val); toggleModal(false); } }
+    function updateFromInput() { 
+        const val = document.getElementById('dtInput').value; 
+        if (val) { calculate(val); toggleModal(false); } 
+    }
 
     function renderEngine() {
         if(!currentData) return;
         const d = currentData;
-        
-        // [強制修復] 每次切換前必須徹底清除向量畫布，避免記憶體洩漏與畫面重疊
         document.getElementById('bg-layer').innerHTML = '';
         document.getElementById('gods-layer').innerHTML = '';
 
@@ -155,7 +175,8 @@
             baziL2.innerHTML = `<tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
             renderCompass(d.dmElementIdx, d.dmPolarity);
         }
-        document.getElementById('dp').innerText = d.timeStr.replace('T', ' ');
+        
+        document.getElementById('dp').innerText = "設定：" + d.timeStr.replace('T', ' ');
     }
 
     function renderCrossGrid(dmElementIdx, dmPolarity) {
@@ -207,9 +228,9 @@
             group.appendChild(createText(px, y + 15, GOD_NAMES[gIdx * 2 + i], "card-text"));
             group.appendChild(createText(px, y + 45, STEMS_MATRIX[targetElementIdx][(dmPolarity + i) % 2], "card-stem"));
         }
-        const wx = createText(cx, y + 75, ELEMENTS[targetElementIdx], "card-title");
-        wx.style.fill = `var(--${WX_COLOR[ELEMENTS[targetElementIdx]]})`;
-        group.appendChild(wx);
+        const wxText = createText(cx, y + 75, ELEMENTS[targetElementIdx], "card-title");
+        wxText.style.fill = `var(--${WX_COLOR[ELEMENTS[targetElementIdx]]})`;
+        group.appendChild(wxText);
         layer.appendChild(group);
     }
 
@@ -230,9 +251,10 @@
                 const sStart = gStart + i * sectorArc, sEnd = sStart + sectorArc, mid = sStart + (sectorArc / 2), rotation = isTop ? mid : mid + 180;
                 const sp = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 sp.setAttribute("d", getArcPath(sStart, sEnd, CONFIG.r1, CONFIG.r3));
-                sp.setAttribute("class", "sector-path"); layer.appendChild(sp);
+                sp.setAttribute("class", "sector-path"); 
+                sp.style.fill = i === 0 ? "var(--same-bg)" : "var(--oppo-bg)";
+                layer.appendChild(sp);
 
-                // [強制修復] 補回羅盤內部網格線
                 const grid = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 grid.setAttribute("d", getArcLine(sStart, sEnd, CONFIG.r2));
                 grid.setAttribute("class", "inner-grid"); layer.appendChild(grid);
@@ -263,7 +285,13 @@
         return `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`;
     }
 
-    window.onload = () => calculate(setNowAndCalc());
+    window.onload = () => {
+        const nowStr = getNowString();
+        // 核心更正：基準時間改為顯示干支資訊
+        document.getElementById('dp-reference').innerText = "基準：" + getBaziString(nowStr);
+        document.getElementById('dtInput').value = nowStr;
+        calculate(nowStr);
+    };
 </script>
 </body>
 </html>
