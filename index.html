@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.min.js"></script>
+    <title>十神五極</title>
+    <style>
+        :root {
+            --bg: #e9e4d1; --gold: #5d5d4d; --green: #2e5a4b; --red: #a64d4d;
+            --wood: #2d5d4d; --fire: #a64d4d; --earth: #8c6d31; --metal: #5a5a5a; --water: #2d4a5d;
+        }
+        body.dark-theme { --bg: #0f0e0c; --gold: #d4a75b; --green: #4fac8d; --red: #ff3e3e; }
+
+        body { 
+            background: var(--bg); color: var(--gold); 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            min-height: 100vh; margin: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            overflow: hidden; transition: all 0.4s;
+        }
+
+        .disc-wrapper { 
+            position: relative; width: min(95vmin, 700px); height: min(95vmin, 700px); 
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        svg { width: 100%; height: 100%; overflow: visible; }
+
+        .sector-path { fill: none; stroke: var(--gold); stroke-width: 1.2; transition: all 0.5s ease; }
+        .inner-grid { fill: none; stroke: var(--gold); stroke-width: 0.8; opacity: 0.5; }
+        .wuxing-label { font-size: 22px; font-weight: 900; letter-spacing: 2px; }
+        .inner-label { font-size: 13.5px; fill: var(--gold); }
+        .outer-stem { font-size: 15.5px; fill: var(--gold); font-weight: bold; }
+        
+        .card-bg { fill: rgba(93, 93, 77, 0.05); stroke: var(--gold); stroke-width: 1.5; rx: 8px; }
+        .card-line { fill: none; stroke: var(--gold); stroke-width: 0.8; opacity: 0.6; }
+        .card-title { font-size: 16px; font-weight: 900; }
+        .card-text { font-size: 14px; fill: var(--gold); }
+        .card-stem { font-size: 16px; font-weight: bold; fill: var(--gold); }
+        
+        /* 虛線樣式 */
+        .connect-line { fill: none; stroke: var(--gold); stroke-width: 1.5; opacity: 0.3; stroke-dasharray: 4 4; }
+        
+        /* 生剋文字 */
+        .relation-label { font-size: 18px; fill: var(--gold); opacity: 0.9; font-weight: 900; letter-spacing: 2px;}
+
+        .dm-main { font-size: 60px; font-weight: 900; text-anchor: middle; transition: all 0.4s ease; }
+        .bazi-sub { font-size: 14px; fill: var(--gold); text-anchor: middle; opacity: 0.9; transition: all 0.4s ease; }
+
+        /* 底部控制區：退回垂直置中與原本圓圈按鈕 */
+        .footer { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .date-pill { 
+            padding: 10px 24px; border: 1.5px solid var(--gold); border-radius: 30px; 
+            background: rgba(93, 93, 77, 0.05); font-size: 15px; cursor: pointer;
+            display: inline-block; width: auto; text-align: center; white-space: nowrap; font-weight: bold;
+        }
+        .theme-btn { 
+            width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid var(--gold); 
+            cursor: pointer; opacity: 0.5; transition: opacity 0.3s;
+        }
+        .theme-btn:hover { opacity: 0.9; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); z-index: 100; justify-content: center; align-items: center; }
+        .modal-box { background: var(--bg); padding: 30px; border-radius: 20px; border: 2px solid var(--gold); text-align: center; width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .input-row { display: flex; gap: 8px; margin-bottom: 20px; }
+        input[type="datetime-local"] { flex: 1; padding: 10px; border: 1.2px solid var(--gold); border-radius: 8px; background: transparent; color: inherit; font-size: 15px; }
+        .btn-ok { padding: 10px 15px; background: var(--green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .modal-btns { display: flex; justify-content: space-between; gap: 10px; }
+        .btn-side { background: var(--gold); color: var(--bg); border: none; padding: 10px; border-radius: 20px; cursor: pointer; flex: 1; font-size: 13px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="disc-wrapper" onclick="toggleMode()" title="點擊切換排版模式">
+    <svg id="main-svg" viewBox="0 0 700 700">
+        <g id="bg-layer"></g>
+        <g id="gods-layer"></g>
+        
+        <text x="350" y="350" class="dm-main" id="dmDisplay" dominant-baseline="middle">--</text>
+        
+        <g id="bazi-group">
+            <text x="320" y="375" class="bazi-sub" id="baziLine1" dominant-baseline="middle">讀取中...</text>
+            <text x="380" y="400" class="bazi-sub" id="baziLine2" dominant-baseline="middle"></text>
+        </g>
+    </svg>
+</div>
+
+<div class="footer">
+    <div class="date-pill" id="dp" onclick="toggleModal(true); event.stopPropagation();">讀取時間...</div>
+    <div class="theme-btn" onclick="document.body.classList.toggle('dark-theme'); event.stopPropagation();" title="切換主題"></div>
+</div>
+
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <h4 style="margin:0 0 15px 0;">出生時間設定</h4>
+        <div class="input-row">
+            <input type="datetime-local" id="dtInput">
+            <button class="btn-ok" onclick="updateFromInput()">確定</button>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-side" style="background:#888;" onclick="toggleModal(false)">取消</button>
+            <button class="btn-side" onclick="setToNowAndCalc()">今天</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const CONFIG = { cx: 350, cy: 350, r0: 140, r1: 180, r2: 230, r3: 280 };
+    const ELEMENTS = ["木", "火", "土", "金", "水"];
+    const WX_COLOR = { "木": "wood", "火": "fire", "土": "earth", "金": "metal", "水": "water" };
+    const GOD_NAMES = ["比肩", "劫財", "食神", "傷官", "偏財", "正財", "七殺", "正官", "偏印", "正印"];
+    
+    const STEMS_MATRIX = [
+        ["甲", "乙"], ["丙", "丁"], ["戊", "己"], ["庚", "辛"], ["壬", "癸"]
+    ];
+
+    let isGridMode = true; 
+    let currentData = null;
+
+    function toggleModal(s) { document.getElementById('modal').style.display = s ? 'flex' : 'none'; }
+    
+    function toggleMode() {
+        isGridMode = !isGridMode;
+        if(currentData) renderEngine();
+    }
+
+    function setNowAndCalc() {
+        const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
+        const localTime = n.toISOString().slice(0, 16);
+        document.getElementById('dtInput').value = localTime;
+        return localTime;
+    }
+
+    function calculate(timeStr) {
+        try {
+            if (typeof Solar === 'undefined') { alert("組件尚未就緒，請檢查網路連線"); return; }
+            const t = timeStr.match(/\d+/g);
+            if (!t || t.length < 5) throw new Error("時間格式不完整");
+
+            const solar = Solar.fromYmdHms(parseInt(t[0]), parseInt(t[1]), parseInt(t[2]), parseInt(t[3]), parseInt(t[4]), 0);
+            const lunar = solar.getLunar();
+            const bc = lunar.getEightChar();
+            
+            const dayGan = bc.getDayGan();
+            let dmElementIdx = -1, dmPolarity = -1;
+            for (let i = 0; i < 5; i++) {
+                if (STEMS_MATRIX[i][0] === dayGan) { dmElementIdx = i; dmPolarity = 0; break; }
+                if (STEMS_MATRIX[i][1] === dayGan) { dmElementIdx = i; dmPolarity = 1; break; }
+            }
+            
+            currentData = {
+                dayGan: dayGan, dayWx: ELEMENTS[dmElementIdx], 
+                dmElementIdx: dmElementIdx, dmPolarity: dmPolarity,
+                year: bc.getYear(), month: bc.getMonth(), day: bc.getDay(), time: bc.getTime(),
+                timeStr: timeStr
+            };
+            
+            renderEngine();
+        } catch (e) {
+            console.error(e); alert("系統錯誤：" + e.message);
+        }
+    }
+
+    function updateFromInput() {
+        const val = document.getElementById('dtInput').value;
+        if (val) { calculate(val); toggleModal(false); }
+    }
+
+    function setToNowAndCalc() {
+        const time = setNowAndCalc(); calculate(time); toggleModal(false);
+    }
+
+    function renderEngine() {
+        if(!currentData) return;
+        const d = currentData;
+
+        const dm = document.getElementById('dmDisplay');
+        dm.textContent = d.dayGan + d.dayWx;
+        dm.style.fill = `var(--${WX_COLOR[d.dayWx]})`;
+
+        const line1 = `<tspan font-weight="900">${d.year}</tspan><tspan font-weight="normal">年 </tspan><tspan font-weight="900">${d.month}</tspan><tspan font-weight="normal">月</tspan>`;
+        const line2 = `<tspan font-weight="900">${d.day}</tspan><tspan font-weight="normal">日 </tspan><tspan font-weight="900">${d.time}</tspan><tspan font-weight="normal">時</tspan>`;
+        document.getElementById('baziLine1').innerHTML = line1;
+        document.getElementById('baziLine2').innerHTML = line2;
+        document.getElementById('dp').innerText = d.timeStr.replace('T', ' ');
+
+        document.getElementById('bg-layer').innerHTML = '';
+        document.getElementById('gods-layer').innerHTML = '';
+
+        if (isGridMode) {
+            dm.setAttribute("y", "350");
+            document.getElementById('bazi-group').setAttribute("transform", "translate(-20, 270)"); 
+            renderCrossGrid(d.dmElementIdx, d.dmPolarity);
+        } else {
+            dm.setAttribute("y", "340");
+            document.getElementById('bazi-group').setAttribute("transform", "translate(0, 40)");
+            renderCompass(d.dmElementIdx, d.dmPolarity);
+        }
+    }
+
+    function renderCrossGrid(dmElementIdx, dmPolarity) {
+        const layer = document.getElementById('gods-layer');
+        const bgLayer = document.getElementById('bg-layer');
+        
+        // 生我(左) 格子再往左推50% (X: 210 -> 130)
+        const positions = [
+            { gIdx: 0, x: 460, y: 240, label: "同我" }, 
+            { gIdx: 1, x: 600, y: 350, label: "我生" }, 
+            { gIdx: 2, x: 350, y: 480, label: "我剋" }, 
+            { gIdx: 3, x: 350, y: 130, label: "剋我" }, 
+            { gIdx: 4, x: 130, y: 350, label: "生我" }  
+        ];
+
+        positions.forEach(pos => {
+            if(pos.gIdx === 0) return; // 主格不連線
+
+            // 1. 計算格子外框 (卡片寬度100，高度90)
+            let endX = pos.x;
+            let endY = pos.y;
+            if (pos.gIdx === 1) endX -= 50; // 我生(右) -> 接觸左外框
+            else if (pos.gIdx === 4) endX += 50; // 生我(左) -> 接觸右外框
+            else if (pos.gIdx === 2) endY -= 45; // 我剋(下) -> 接觸上外框
+            else if (pos.gIdx === 3) endY += 45; // 剋我(上) -> 接觸下外框
+
+            // 虛線從中心連到格子外框
+            let path = `M 350 350 L ${endX} ${endY}`;
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            line.setAttribute("d", path);
+            line.setAttribute("class", "connect-line");
+            bgLayer.appendChild(line);
+
+            // 2. 嚴格等距文字佈局：絕對半徑 R=75，確保四個標籤離中心完全對等
+            const textR = 75;
+            let labelX = 350;
+            let labelY = 350;
+
+            // 加上微調以避開虛線穿透文字
+            if (pos.gIdx === 1) { labelX += textR; labelY -= 15; } // 我生
+            else if (pos.gIdx === 4) { labelX -= textR; labelY -= 15; } // 生我
+            else if (pos.gIdx === 2) { labelY += textR; labelX -= 25; } // 我剋
+            else if (pos.gIdx === 3) { labelY -= textR; labelX -= 25; } // 剋我
+            
+            bgLayer.appendChild(createText(labelX, labelY, pos.label, "relation-label"));
+        });
+
+        positions.forEach(pos => {
+            drawCard(layer, pos.x, pos.y, pos.gIdx, dmElementIdx, dmPolarity);
+        });
+    }
+
+    function drawCard(layer, cx, cy, gIdx, dmElementIdx, dmPolarity) {
+        const w = 100, h = 90;
+        const x = cx - w/2, y = cy - h/2;
+        const targetElementIdx = (dmElementIdx + gIdx) % 5;
+        const targetWx = ELEMENTS[targetElementIdx];
+        const wxFillColor = `var(--${WX_COLOR[targetWx]})`;
+
+        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", x); rect.setAttribute("y", y);
+        rect.setAttribute("width", w); rect.setAttribute("height", h);
+        rect.setAttribute("class", "card-bg");
+        group.appendChild(rect);
+
+        const lineH1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        lineH1.setAttribute("x1", x); lineH1.setAttribute("y1", y+30); lineH1.setAttribute("x2", x+w); lineH1.setAttribute("y2", y+30);
+        lineH1.setAttribute("class", "card-line"); group.appendChild(lineH1);
+
+        const lineH2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        lineH2.setAttribute("x1", x); lineH2.setAttribute("y1", y+60); lineH2.setAttribute("x2", x+w); lineH2.setAttribute("y2", y+60);
+        lineH2.setAttribute("class", "card-line"); group.appendChild(lineH2);
+
+        const lineV = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        lineV.setAttribute("x1", x+w/2); lineV.setAttribute("y1", y); lineV.setAttribute("x2", x+w/2); lineV.setAttribute("y2", y+60);
+        lineV.setAttribute("class", "card-line"); group.appendChild(lineV);
+
+        for (let i = 0; i < 2; i++) {
+            const godName = GOD_NAMES[gIdx * 2 + i];
+            const targetPolarity = (dmPolarity + i) % 2;
+            const stemChar = STEMS_MATRIX[targetElementIdx][targetPolarity];
+            
+            const px = x + (i === 0 ? w/4 : (w/4)*3);
+            group.appendChild(createText(px, y + 15, godName, "card-text"));
+            group.appendChild(createText(px, y + 45, stemChar, "card-stem"));
+        }
+
+        const wxText = createText(cx, y + 75, targetWx, "card-title");
+        wxText.style.fill = wxFillColor;
+        group.appendChild(wxText);
+
+        layer.appendChild(group);
+    }
+
+    // --- 模式 2：羅盤 ---
+    function renderCompass(dmElementIdx, dmPolarity) {
+        const layer = document.getElementById('gods-layer');
+        const gap = 10, groupArc = (360 - 50) / 5, sectorArc = groupArc / 2, startOffset = 5; 
+
+        for (let gIdx = 0; gIdx < 5; gIdx++) {
+            const gStart = startOffset + gIdx * (groupArc + gap);
+            const gEnd = gStart + groupArc;
+            const gMid = gStart + (groupArc / 2);
+            const isTop = (gIdx === 0 || gIdx === 4);
+            const groupRot = isTop ? gMid : gMid + 180;
+            
+            const targetElementIdx = (dmElementIdx + gIdx) % 5;
+            const targetWx = ELEMENTS[targetElementIdx];
+            const wxFillColor = `var(--${WX_COLOR[targetWx]})`;
+
+            const wuxingPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            wuxingPath.setAttribute("d", getArcPath(gStart, gEnd, CONFIG.r0, CONFIG.r1));
+            wuxingPath.setAttribute("class", "sector-path"); layer.appendChild(wuxingPath);
+
+            const wxText = createTextRotated((CONFIG.r0 + CONFIG.r1)/2, gMid, targetWx, "wuxing-label", groupRot);
+            wxText.style.fill = wxFillColor; layer.appendChild(wxText);
+
+            for (let i = 0; i < 2; i++) {
+                const sStart = gStart + i * sectorArc, sEnd = sStart + sectorArc, mid = sStart + (sectorArc / 2);
+                const rotation = isTop ? mid : mid + 180;
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", getArcPath(sStart, sEnd, CONFIG.r1, CONFIG.r3));
+                path.setAttribute("class", "sector-path"); layer.appendChild(path);
+
+                const grid = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                grid.setAttribute("d", getArcLine(sStart, sEnd, CONFIG.r2));
+                grid.setAttribute("class", "inner-grid"); layer.appendChild(grid);
+
+                const targetPolarity = (dmPolarity + i) % 2;
+                const stemChar = STEMS_MATRIX[targetElementIdx][targetPolarity];
+
+                layer.appendChild(createTextRotated((CONFIG.r1 + CONFIG.r2)/2, mid, GOD_NAMES[gIdx * 2 + i], "inner-label", rotation));
+                layer.appendChild(createTextRotated((CONFIG.r2 + CONFIG.r3)/2, mid, stemChar + targetWx, "outer-stem", rotation));
+            }
+        }
+    }
+
+    function xy(r, deg) {
+        const rad = (deg - 90) * Math.PI / 180;
+        return { x: CONFIG.cx + r * Math.cos(rad), y: CONFIG.cy + r * Math.sin(rad) };
+    }
+    function getArcPath(s, e, r1, r2) {
+        const p1 = xy(r1, s), p2 = xy(r1, e), p3 = xy(r2, e), p4 = xy(r2, s);
+        return `M ${p1.x} ${p1.y} A ${r1} ${r1} 0 0 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${r2} ${r2} 0 0 0 ${p4.x} ${p4.y} Z`;
+    }
+    function getArcLine(s, e, r) {
+        const p1 = xy(r, s), p2 = xy(r, e);
+        return `M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`;
+    }
+    function createText(x, y, txt, cls) {
+        const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t.setAttribute("x", x); t.setAttribute("y", y);
+        t.setAttribute("class", cls); t.setAttribute("text-anchor", "middle"); t.setAttribute("dominant-baseline", "middle");
+        t.textContent = txt; return t;
+    }
+    function createTextRotated(r, deg, txt, cls, rot) {
+        const p = xy(r, deg);
+        const t = createText(p.x, p.y, txt, cls);
+        t.setAttribute("transform", `rotate(${rot}, ${p.x}, ${p.y})`);
+        return t;
+    }
+
+    window.onload = () => {
+        const initialTime = setNowAndCalc();
+        calculate(initialTime);
+    };
+</script>
+</body>
+</html>
