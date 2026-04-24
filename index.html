@@ -6,6 +6,9 @@
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.min.js"></script>
     <title>十神五極</title>
     <style>
+        /* 核心修正：徹底封殺行動端原生點擊藍色遮罩 */
+        * { -webkit-tap-highlight-color: transparent; }
+
         :root {
             --bg: #e9e4d1; --gold: #5d5d4d; --text-main: #5d5d4d; 
             --green: #2e5a4b; --red: #a64d4d;
@@ -19,7 +22,7 @@
         }
         body { background: var(--bg); color: var(--text-main); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: "PingFang TC", sans-serif; overflow: hidden; transition: background 0.5s; }
         
-        .disc-wrapper { position: relative; width: min(95vmin, 700px); height: min(95vmin, 700px); cursor: pointer; }
+        .disc-wrapper { position: relative; width: min(95vmin, 700px); height: min(95vmin, 700px); cursor: pointer; outline: none; }
         svg { width: 100%; height: 100%; overflow: visible; }
 
         .node-group { transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -52,7 +55,7 @@
             z-index: 10;
         }
         
-        .date-pill { padding: 8px 22px; border: 1.5px solid var(--gold); border-radius: 30px; font-size: 13px; font-weight: bold; background: rgba(93, 93, 77, 0.05); cursor: pointer; color: var(--text-main); }
+        .date-pill { padding: 8px 22px; border: 1.5px solid var(--gold); border-radius: 30px; font-size: 13px; font-weight: bold; background: rgba(93, 93, 77, 0.05); cursor: pointer; color: var(--text-main); user-select: none; }
         
         .q-btn {
             width: 36px; height: 36px; border-radius: 50%; 
@@ -61,6 +64,7 @@
             border: 2px solid rgba(255,255,255,0.2); 
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             transition: transform 0.1s;
+            user-select: none;
         }
         .q-btn:active { transform: scale(0.85); }
         .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid var(--gold); cursor: pointer; opacity: 0.5; }
@@ -131,14 +135,12 @@
         const dg = bc.getDayGan();
         let di = -1, dp = -1;
         for(let i=0;i<5;i++){ if(STEMS[i][0]===dg){di=i;dp=0;} if(STEMS[i][1]===dg){di=i;dp=1;} }
-        // isQuick 設為 false
         cur = { dg, dw: ELEMENTS[di], di, dp, year: bc.getYear(), month: bc.getMonth(), day: bc.getDay(), time: bc.getTime(), ts, isQuick: false };
         initDOM(); render();
     }
 
     function setQuick(idx) {
         let newDp = 0; 
-        // 若在自訂模式下點擊同屬性，進行陰陽反轉
         if (cur && cur.di === idx && cur.isQuick) { newDp = (cur.dp + 1) % 2; }
         
         cur = { 
@@ -147,10 +149,9 @@
             di: idx, 
             dp: newDp, 
             year: "-", month: "-", day: "-", time: "-", 
-            ts: document.getElementById('dtInput').value, // 保留原有的時間字串
-            isQuick: true // 標記為快速自訂模式
+            ts: document.getElementById('dtInput').value,
+            isQuick: true 
         };
-        // 移除清空 dtInput 的動作，保留時間
         initDOM(); render();
     }
 
@@ -242,7 +243,6 @@
             else { g.setAttribute("transform", "translate(0,0)"); s.style.opacity = "1"; s.style.transform = "scale(1)"; c.style.opacity = "0"; c.style.transform = "scale(0.6)"; }
         }
         
-        // 核心修正：按鈕永遠顯示設定的時間，確保使用者知道它的作用
         document.getElementById('dp').innerText = `設定：${d.ts.replace('T', ' ')}`;
     }
 
