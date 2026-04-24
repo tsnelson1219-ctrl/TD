@@ -40,7 +40,6 @@
 
         .c-t, .c-s, .inner-label, .outer-stem, .relation-label, .bazi-sub { fill: var(--text-main); }
         
-        /* 繼承 V44 的完美靜態佈局 */
         .footer { 
             margin-top: -10px; 
             display: flex; 
@@ -55,7 +54,6 @@
         
         .date-pill { padding: 8px 22px; border: 1.5px solid var(--gold); border-radius: 30px; font-size: 13px; font-weight: bold; background: rgba(93, 93, 77, 0.05); cursor: pointer; color: var(--text-main); }
         
-        /* 五行快捷鍵樣式 */
         .q-btn {
             width: 36px; height: 36px; border-radius: 50%; 
             display: flex; justify-content: center; align-items: center;
@@ -65,7 +63,6 @@
             transition: transform 0.1s;
         }
         .q-btn:active { transform: scale(0.85); }
-
         .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid var(--gold); cursor: pointer; opacity: 0.5; }
     </style>
 </head>
@@ -134,29 +131,27 @@
         const dg = bc.getDayGan();
         let di = -1, dp = -1;
         for(let i=0;i<5;i++){ if(STEMS[i][0]===dg){di=i;dp=0;} if(STEMS[i][1]===dg){di=i;dp=1;} }
-        cur = { dg, dw: ELEMENTS[di], di, dp, year: bc.getYear(), month: bc.getMonth(), day: bc.getDay(), time: bc.getTime(), ts };
+        // isQuick 設為 false
+        cur = { dg, dw: ELEMENTS[di], di, dp, year: bc.getYear(), month: bc.getMonth(), day: bc.getDay(), time: bc.getTime(), ts, isQuick: false };
         initDOM(); render();
     }
 
-    // 核心邏輯修正：支援同元素內的陰陽 (天干) 切換
     function setQuick(idx) {
-        let newDp = 0; // 預設為陽干 (如甲)
-        // 若當前已是自訂模式 (ts == "") 且點擊相同的五行，則進行陰陽反轉
-        if (cur && cur.di === idx && cur.ts === "") {
-            newDp = (cur.dp + 1) % 2;
-        }
+        let newDp = 0; 
+        // 若在自訂模式下點擊同屬性，進行陰陽反轉
+        if (cur && cur.di === idx && cur.isQuick) { newDp = (cur.dp + 1) % 2; }
         
         cur = { 
-            dg: STEMS[idx][newDp], // 精確抓取天干字元 (甲, 乙...)
+            dg: STEMS[idx][newDp], 
             dw: ELEMENTS[idx], 
             di: idx, 
             dp: newDp, 
             year: "-", month: "-", day: "-", time: "-", 
-            ts: "" 
+            ts: document.getElementById('dtInput').value, // 保留原有的時間字串
+            isQuick: true // 標記為快速自訂模式
         };
-        document.getElementById('dtInput').value = ""; 
-        initDOM(); 
-        render();
+        // 移除清空 dtInput 的動作，保留時間
+        initDOM(); render();
     }
 
     function initDOM() {
@@ -216,18 +211,13 @@
         if(!cur) return;
         const d = cur, bG = document.getElementById('bazi-group'), bL1 = document.getElementById('baziL1'), bL2 = document.getElementById('baziL2');
         const extras = document.getElementById('grid-extras'), dm = document.getElementById('dmDisplay');
-        
-        // 恢復正常顯示：將天干與五行組合 (例如: 乙木)
         dm.textContent = d.dg + d.dw; 
         dm.style.fill = `var(--${WX_COLOR[d.dw]})`; 
         extras.innerHTML = '';
-        
         const gridPos = [{x:460, y:240}, {x:630, y:350}, {x:350, y:480}, {x:130, y:350}, {x:350, y:100}];
-        
         if(isGrid) {
             bG.setAttribute("transform", "translate(0, 190)"); 
-            bL1.setAttribute("x", 350); 
-            bL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月 <tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
+            bL1.setAttribute("x", 350); bL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月 <tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
             bL2.innerHTML = "";
             gridPos.forEach((p, i) => {
                 if(i===0) return;
@@ -246,15 +236,14 @@
             bL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月`;
             bL2.innerHTML = `<tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
         }
-        
         for(let i=0; i<5; i++) {
             const g = document.getElementById(`node-${i}`), s = g.querySelector('.sector-part'), c = g.querySelector('.card-part');
             if(isGrid) { g.setAttribute("transform", `translate(${gridPos[i].x-350}, ${gridPos[i].y-350})`); s.style.opacity = "0"; s.style.transform = "scale(0.6)"; c.style.opacity = "1"; c.style.transform = "scale(1)"; }
             else { g.setAttribute("transform", "translate(0,0)"); s.style.opacity = "1"; s.style.transform = "scale(1)"; c.style.opacity = "0"; c.style.transform = "scale(0.6)"; }
         }
         
-        // 動態反饋：清楚標示當前的精確日主局
-        document.getElementById('dp').innerText = d.ts === "" ? `設定：自訂${d.dg}${d.dw}` : `設定：${d.ts.replace('T', ' ')}`;
+        // 核心修正：按鈕永遠顯示設定的時間，確保使用者知道它的作用
+        document.getElementById('dp').innerText = `設定：${d.ts.replace('T', ' ')}`;
     }
 
     function getXY(r, d) { const ra = (d-90)*Math.PI/180; return { x: 350+r*Math.cos(ra), y: 350+r*Math.sin(ra) }; }
