@@ -54,9 +54,10 @@
             z-index: 10;
         }
         
+        /* 核心修正：升級為 all，達成「點擊/長按即全選整塊原子字串」的無痛體驗 */
         .selectable {
-            -webkit-user-select: text;
-            user-select: text;
+            -webkit-user-select: all;
+            user-select: all;
             cursor: text;
         }
 
@@ -88,7 +89,6 @@
         
         <text x="350" y="335" class="dm-main selectable" id="dmDisplay" text-anchor="middle" dominant-baseline="middle" font-weight="900" font-size="60" onclick="event.stopPropagation()">--</text>
         <g id="bazi-group" class="bazi-group" onclick="event.stopPropagation()">
-            <!-- 修正：將 font-size 從 14 提升為 20 以平衡手機縮放比例 -->
             <text class="bazi-sub selectable" id="baziL1" text-anchor="middle" dominant-baseline="middle" font-size="20"></text>
             <text class="bazi-sub selectable" id="baziL2" text-anchor="middle" dominant-baseline="middle" font-size="20"></text>
         </g>
@@ -106,6 +106,7 @@
         <div class="q-btn" style="background:var(--water)" onclick="setQuick(4); event.stopPropagation();">水</div>
     </div>
 
+    <!-- 今日干支同樣享有全選特權 -->
     <div class="date-pill selectable" id="dp-ref" style="border-width:3.5px; color:var(--red);" onclick="event.stopPropagation();">今日干支...</div>
     <div class="theme-btn" onclick="document.body.classList.toggle('dark-theme'); event.stopPropagation();"></div>
 </div>
@@ -220,8 +221,13 @@
         const gridPos = [{x:460, y:240}, {x:630, y:350}, {x:350, y:480}, {x:130, y:350}, {x:350, y:100}];
         if(isGrid) {
             bG.setAttribute("transform", "translate(0, 190)"); 
-            bL1.setAttribute("x", 350); bL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月 <tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
-            bL2.innerHTML = "";
+            bL1.setAttribute("x", 350); 
+            
+            // 核心修正：移除 <tspan> 碎片化，改用純字串，並賦予全域粗體
+            bL1.textContent = `${d.year}年 ${d.month}月 ${d.day}日 ${d.time}時`;
+            bL1.setAttribute("font-weight", "800");
+            bL2.textContent = "";
+
             gridPos.forEach((p, i) => {
                 if(i===0) return;
                 const offsets = [[0,0], [135,-15], [-25,75], [-110,-15], [-25,-105]], labels = ["", "我生", "我剋", "剋我", "生我"];
@@ -234,11 +240,14 @@
             });
         } else {
             bG.setAttribute("transform", "translate(0, 0)");
-            /* 修正：配合放大的字體，拓寬排版間距避免重疊 */
             bL1.setAttribute("x", 310); bL1.setAttribute("y", 395);
             bL2.setAttribute("x", 390); bL2.setAttribute("y", 425);
-            bL1.innerHTML = `<tspan font-weight="900">${d.year}</tspan>年 <tspan font-weight="900">${d.month}</tspan>月`;
-            bL2.innerHTML = `<tspan font-weight="900">${d.day}</tspan>日 <tspan font-weight="900">${d.time}</tspan>時`;
+            
+            // 核心修正：同樣移除 <tspan> 碎片化
+            bL1.textContent = `${d.year}年 ${d.month}月`;
+            bL2.textContent = `${d.day}日 ${d.time}時`;
+            bL1.setAttribute("font-weight", "800");
+            bL2.setAttribute("font-weight", "800");
         }
         for(let i=0; i<5; i++) {
             const g = document.getElementById(`node-${i}`), s = g.querySelector('.sector-part'), c = g.querySelector('.card-part');
