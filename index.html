@@ -54,14 +54,12 @@
             z-index: 10;
         }
         
-        /* 退回原生手動選取，因為 <tspan> 已拔除，現在可以整行平滑拖曳選取 */
         .selectable {
             -webkit-user-select: text;
             user-select: text;
             cursor: text;
         }
 
-        /* 稍微調整 radius 與 line-height 以完美包容雙曆法換行 */
         .date-pill { padding: 8px 22px; border: 1.5px solid var(--gold); border-radius: 20px; font-size: 13px; font-weight: bold; background: rgba(93, 93, 77, 0.05); cursor: pointer; color: var(--text-main); text-align: center; max-width: 85vw; line-height: 1.5; }
         
         .q-btn {
@@ -107,7 +105,6 @@
         <div class="q-btn" style="background:var(--water)" onclick="setQuick(4); event.stopPropagation();">水</div>
     </div>
 
-    <!-- 核心修正：外框負責觸發跳回今日，內文 span 阻擋事件以利手動選取 -->
     <div class="date-pill" style="border-width:3.5px; color:var(--red);" onclick="resetToToday(); event.stopPropagation();">
         <span id="dp-ref" class="selectable" onclick="event.stopPropagation();">今日干支...</span>
     </div>
@@ -135,20 +132,19 @@
     function updateInput() { const v = document.getElementById('dtInput').value; if(v){ calc(v); toggleModal(false); } }
     function getNowStr() { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); return n.toISOString().slice(0, 16); }
     
-    // 一鍵跳回現在時刻
     function resetToToday() {
         const n = getNowStr();
         document.getElementById('dtInput').value = n;
         calc(n);
     }
 
-    // 格式化今日字串，加入農曆
+    // 移除 opacity: 0.8
     function getBaziStr(ts) {
         const t = ts.match(/\d+/g);
         const s = Solar.fromYmdHms(parseInt(t[0]),parseInt(t[1]),parseInt(t[2]),parseInt(t[3]),parseInt(t[4]),0);
         const lunar = s.getLunar();
         const bc = lunar.getEightChar();
-        return `今日：${bc.getYear()}年 ${bc.getMonth()}月 ${bc.getDay()}日 ${bc.getTime()}時 <span style="font-size:12px; opacity:0.8; font-weight:normal;">(農曆${lunar.getMonthInChinese()}月${lunar.getDayInChinese()})</span>`;
+        return `今日：${bc.getYear()}年 ${bc.getMonth()}月 ${bc.getDay()}日 ${bc.getTime()}時 <span style="font-size:12px; font-weight:normal;">(農曆${lunar.getMonthInChinese()}月${lunar.getDayInChinese()})</span>`;
     }
 
     function calc(ts) {
@@ -157,8 +153,6 @@
         const lunar = s.getLunar();
         const bc = lunar.getEightChar();
         const dg = bc.getDayGan();
-        
-        // 取得農曆月日字串
         const lunarStr = lunar.getMonthInChinese() + '月' + lunar.getDayInChinese();
         
         let di = -1, dp = -1;
@@ -175,7 +169,7 @@
             dg: STEMS[idx][newDp], dw: ELEMENTS[idx], di: idx, dp: newDp, 
             year: "-", month: "-", day: "-", time: "-", 
             ts: document.getElementById('dtInput').value, 
-            lunarStr: cur ? cur.lunarStr : "", // 保留原本算出來的農曆，或讓自訂局不顯示
+            lunarStr: cur ? cur.lunarStr : "", 
             isQuick: true 
         };
         initDOM(); render();
@@ -274,10 +268,10 @@
             else { g.setAttribute("transform", "translate(0,0)"); s.style.opacity = "1"; s.style.transform = "scale(1)"; c.style.opacity = "0"; c.style.transform = "scale(0.6)"; }
         }
         
-        // 匯入農曆並稍微調淡字體以維持層次感
+        // 移除 opacity: 0.6
         document.getElementById('dp').innerHTML = d.isQuick 
             ? `設定：自訂${d.dg}${d.dw}` 
-            : `設定：${d.ts.replace('T', ' ')} <span style="font-size:12px; color:var(--text-main); opacity:0.6; font-weight:normal;">(農曆${d.lunarStr})</span>`;
+            : `設定：${d.ts.replace('T', ' ')} <span style="font-size:12px; font-weight:normal;">(農曆${d.lunarStr})</span>`;
     }
 
     function getXY(r, d) { const ra = (d-90)*Math.PI/180; return { x: 350+r*Math.cos(ra), y: 350+r*Math.sin(ra) }; }
@@ -294,7 +288,6 @@
         t.setAttribute("transform", `rotate(${rot},${x},${y})`); t.textContent = txt; return t;
     }
     
-    // 初始化載入
     window.onload = () => { 
         const n = getNowStr(); 
         document.getElementById('dp-ref').innerHTML = getBaziStr(n); 
